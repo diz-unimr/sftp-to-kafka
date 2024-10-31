@@ -1,0 +1,31 @@
+
+services:
+  sftp-to-kafka:
+    image: docker.io/library/sftp-to-kafka:0.0.1-SNAPSHOT
+    environment:
+      SPRING_KAFKA_BOOTSTRAPSERVERS: ${KAFKA_BROKERS}
+      SPRING_KAFKA_SECURITY_PROTOCOL: SSL
+      SPRING_KAFKA_SSL_TRUST_STORE_LOCATION: /opt/sftp-to-kafka/ssl/truststore.jks
+      SPRING_KAFKA_SSL_TRUST_STORE_PASSWORD: ${SSL_TRUST_STORE_PASSWORD}
+      SPRING_KAFKA_SSL_KEY_STORE_LOCATION: /opt/sftp-to-kafka/ssl/keystore.jks
+      SPRING_KAFKA_SSL_KEY_STORE_PASSWORD: ${SFTP_SSL_KEY_STORE_PASSWORD}
+      SPRING_DATA_REDIS_HOST: ${SFTP_REDIS_HOST:-localhost}
+      SPRING_DATA_REDIS_PORT: ${SFTP_REDIS_PORT:-6379}
+      SPRING_DATA_REDIS_PASSWORD: ${SFTP_REDIS_PW}
+      APP_TARGET_TOPIC: my-target-topic
+      APP_SOURCE_USE: local
+      APP_SOURCE_LOCAL-PATH: ${SFTP_SOURCE_PATH}
+      APP_PROPERTYASID: ${SFTP_KEY_PROPERTY_PATH}
+      APP_FILENAMEFILTER: ${SFTP_FILE_FILTER_SUFFIX}
+    volumes:
+      - "../certificates/kafka.truststore.jks:/opt/sftp-to-kafka/ssl/truststore.jks"
+      - "../certificates/sftp-to-kafka.keystore:/opt/sftp-to-kafka/ssl/opt/sftp-to-kafka/ssl/keystore.jks"
+
+  redis-metastore:
+    image: redis:alpine3.20
+    environment:
+      REDIS_PASSWORD: ${SFTP_REDIS_PW}
+      REDIS_PORT: ${SFTP_REDIS_PORT:-6379}
+      REDIS_DATABASES: 1
+    expose:
+      - "6379"

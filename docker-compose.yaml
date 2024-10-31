@@ -1,0 +1,76 @@
+services:
+  dev-sftp:
+    restart: no
+    container_name: demo-sftp
+    image: ghcr.io/atmoz/sftp/debian:latest
+    volumes:
+      - ./testData/download:/home/foo/download
+      - ./testData/cert/sftp_known_hosts:/home/foo/.ssh/keys/id_rsa.pub:ro
+      - ./testData/cert/ssh_host_ed25519_key:/etc/ssh/ssh_host_ed25519_key
+      - ./testData/cert/ssh_host_ed25519_key.pub:/etc/ssh/ssh_host_ed25519_key.pub
+    ports:
+      - "2222:22"
+    command:  foo::1001
+
+  kafka:
+    image: docker.io/bitnami/kafka:latest
+    restart: no
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_CFG_NODE_ID: "0"
+      KAFKA_CFG_PROCESS_ROLES: "controller,broker"
+      KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@kafka:9093
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_MESSAGE_MAX_BYTES: ${MAX_MESSAGE_SIZE:-10242880}
+      KAFKA_REPLICA_FETCH_MAX_BYTES: ${MAX_MESSAGE_SIZE:-10242880}
+
+  akhq:
+    image: tchiotludo/akhq:0.25.1
+    restart: no
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            docker-kafka-server:
+              properties:
+                bootstrap.servers: "kafka:9092"
+              connect:
+                - name: "kafka-connect"
+                  url: "http://kafka-connect:8083"
+          clients-defaults:
+            consumer:
+              properties:
+                isolation.level: read_committed
+          topic-data:
+            size: 50 # max record per page (default: 50)
+            poll-timeout: 1000 # The time, in milliseconds, spent waiting in poll if data is not available in the buffer.
+            kafka-max-message-length: 31457280 # Max message length allowed to send to UI when retrieving a list of records in bytes.
+          ui-options:
+              topic:
+                default-view: ALL  # default list view (ALL, HIDE_INTERNAL, HIDE_INTERNAL_STREAM, HIDE_STREAM). Overrides default
+                skip-consumer-groups: false # Skip loading consumer group information when showing topics. Overrides default
+                skip-last-record: true  # Skip loading last record date information when showing topics.  Overrides default
+                show-all-consumer-groups: true # Expand list of consumer groups instead of showing one. Overrides default.
+              topic-data:
+                sort: NEWEST # default sort order (OLDEST, NEWEST) (default: OLDEST).  Overrides default
+    ports:
+      - "8088:8080"
+    depends_on:
+      - kafka
+  redis-metastore:
+    image: redis:alpine3.20
+    volumes:
+      - ./meta-dаta-store:/root/redis
+    environment:
+      REDIS_PASSWORD: my-password
+      REDIS_PORT: 6379
+      REDIS_DATABASES: 1
+    ports:
+      - "6379:6379"

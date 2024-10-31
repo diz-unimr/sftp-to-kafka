@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: sftp-to-kafka
+
+  kafka:
+    bootstrapServers: localhost:9092
+    security.protocol: PLAINTEXT
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: my-password
+app:
+  target:
+    topic: my-target-topic
+  source:
+    use: local #local | sftp
+    local-path: "testData/download"
+    propertyAsId: general.PATIENT_IDENTIFIER
+    fileNameFilter: ".json.zip"
+    sftp:
+      url: localhost
+      port: 2222
+      username: foo
+      accessKeyCertLocation:
+      downloadPath: download/
+
