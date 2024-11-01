@@ -26,8 +26,8 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-integration'
-    implementation 'org.springframework.integration:spring-integration-core:6.3.2'
-    implementation "org.springframework.integration:spring-integration-zip:6.3.4"
+    implementation 'org.springframework.integration:spring-integration-core:6.3.5'
+    implementation "org.springframework.integration:spring-integration-zip:6.3.5"
     implementation 'org.springframework.integration:spring-integration-file:6.3.5'
 
     implementation 'org.springframework.integration:spring-integration-sftp'
