@@ -58,15 +58,23 @@ public class IntegrationSources {
   }
 
   private FileReadingMessageSource getFileReadingMessageSource(String path) {
-    var msource = new FileReadingMessageSource();
+    var source = new FileReadingMessageSource();
     final File directory = new File(path);
     if (!directory.isDirectory() || !directory.canRead()) {
-      throw new IllegalArgumentException("input path should be a readable dictionary");
+
+      throw new IllegalArgumentException(
+          "input path '%s' should be a readable dictionary - EXISTS: '%s' CAN_READ: '%s' IS_DICTIONARY: '%s' IS_FILE: '%s'"
+              .formatted(
+                  directory.toString(),
+                  directory.exists(),
+                  directory.canRead(),
+                  directory.isDirectory(),
+                  directory.isFile()));
     }
-    msource.setDirectory(directory);
-    msource.setFilter(new AcceptAllFileListFilter<>());
-    msource.setUseWatchService(true);
-    return msource;
+    source.setDirectory(directory);
+    source.setFilter(new AcceptAllFileListFilter<>());
+    source.setUseWatchService(true);
+    return source;
   }
 
   public IntegrationFlow readFromSftp(MessageSource<InputStream> messageSource) {
@@ -88,11 +96,9 @@ public class IntegrationSources {
         .handle(
             (payload, headers) -> {
               try {
-                final String s =
-                    new String(
-                        new FileInputStream(((File) ((TreeMap) payload).firstEntry().getValue()))
-                            .readAllBytes());
-                return s;
+                  return new String(
+                      new FileInputStream(((File) ((TreeMap) payload).firstEntry().getValue()))
+                          .readAllBytes());
               } catch (IOException e) {
                 throw new RuntimeException(e);
               }

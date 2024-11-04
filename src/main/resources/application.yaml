@@ -16,7 +16,7 @@ app:
     topic: my-target-topic
   source:
     use: local #local | sftp
-    local-path: "testData/download"
+    localPath: "testData/download"
     propertyAsId: general.PATIENT_IDENTIFIER
     fileNameFilter: ".json.zip"
     sftp:
