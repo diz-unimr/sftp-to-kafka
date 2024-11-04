@@ -9,4 +9,6 @@ public record SourceConfig(
     String use,
     String localPath,
     String fileNameFilter,
-    String propertyAsId) {}
+    String propertyAsId,
+    Integer pollSize,
+    Integer fixedDelay) {}

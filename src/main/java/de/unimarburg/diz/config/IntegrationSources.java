@@ -33,7 +33,8 @@ public class IntegrationSources {
   public IntegrationFlow readFromLocalFolder(String path) {
 
     return IntegrationFlow.from(
-            getFileReadingMessageSource(path), poller -> poller.poller(p -> p.fixedDelay(5)))
+            getFileReadingMessageSource(path),
+            poller -> poller.poller(p -> p.fixedDelay(sourceConfig.fixedDelay())))
         .log(Level.WARN)
         .filter(
             source -> {
@@ -79,7 +80,12 @@ public class IntegrationSources {
 
   public IntegrationFlow readFromSftp(MessageSource<InputStream> messageSource) {
     return IntegrationFlow.from(
-            messageSource, poller -> poller.poller(p -> p.fixedDelay(100).maxMessagesPerPoll(100)))
+            messageSource,
+            poller ->
+                poller.poller(
+                    p ->
+                        p.fixedDelay(sourceConfig.fixedDelay())
+                            .maxMessagesPerPoll(sourceConfig.pollSize())))
         .handle(
             (payload, headers) -> {
               final Object fileRemoteFile = headers.get("file_remoteFile");

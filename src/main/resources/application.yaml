@@ -6,6 +6,8 @@ spring:
     bootstrapServers: localhost:9092
     security.protocol: PLAINTEXT
 
+
+
   data:
     redis:
       host: localhost
@@ -18,8 +20,10 @@ app:
   source:
     use: local #local | sftp
     localPath: "testData/download"
-    propertyAsId: general.PATIENT_IDENTIFIER
+    propertyAsId: GENERAL.PATIENT_IDENTIFIER
     fileNameFilter: ".json.zip"
+    pollSize: 1
+    fixedDelay: 100
     sftp:
       url: localhost
       port: 2222
