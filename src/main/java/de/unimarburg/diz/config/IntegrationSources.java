@@ -96,9 +96,9 @@ public class IntegrationSources {
         .handle(
             (payload, headers) -> {
               try {
-                  return new String(
-                      new FileInputStream(((File) ((TreeMap) payload).firstEntry().getValue()))
-                          .readAllBytes());
+                return new String(
+                    new FileInputStream(((File) ((TreeMap) payload).firstEntry().getValue()))
+                        .readAllBytes());
               } catch (IOException e) {
                 throw new RuntimeException(e);
               }
