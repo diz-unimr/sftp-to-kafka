@@ -1,27 +1,42 @@
 
 services:
   sftp-to-kafka:
-    image: docker.io/library/sftp-to-kafka:0.0.1-SNAPSHOT
+    image: docker.io/library/sftp-to-kafka:latest
     environment:
       SPRING_KAFKA_BOOTSTRAPSERVERS: ${KAFKA_BROKERS}
       SPRING_KAFKA_SECURITY_PROTOCOL: SSL
-      SPRING_KAFKA_SSL_TRUST_STORE_LOCATION: /opt/sftp-to-kafka/ssl/truststore.jks
+      SPRING_KAFKA_SSL_TRUST-STORE-TYPE: PKCS12
+      SPRING_KAFKA_SSL_KEY-STORE-TYPE: PKCS12
+      SPRING_KAFKA_SSL_TRUST_STORE_LOCATION: "/opt/sftp-to-kafka/ssl/truststore.jks"
       SPRING_KAFKA_SSL_TRUST_STORE_PASSWORD: ${SSL_TRUST_STORE_PASSWORD}
-      SPRING_KAFKA_SSL_KEY_STORE_LOCATION: /opt/sftp-to-kafka/ssl/keystore.jks
+      SPRING_KAFKA_SSL_KEY_STORE_LOCATION: "/opt/sftp-to-kafka/ssl/keystore.jks"
       SPRING_KAFKA_SSL_KEY_STORE_PASSWORD: ${SFTP_SSL_KEY_STORE_PASSWORD}
-      SPRING_DATA_REDIS_HOST: ${SFTP_REDIS_HOST:-localhost}
+      SPRING_DATA_REDIS_HOST: db
       SPRING_DATA_REDIS_PORT: ${SFTP_REDIS_PORT:-6379}
       SPRING_DATA_REDIS_PASSWORD: ${SFTP_REDIS_PW}
       APP_TARGET_TOPIC: my-target-topic
-      APP_SOURCE_USE: local
-      APP_SOURCE_LOCALPATH: ${SFTP_SOURCE_PATH}
-      APP_PROPERTYASID: ${SFTP_KEY_PROPERTY_PATH}
-      APP_FILENAMEFILTER: ${SFTP_FILE_FILTER_SUFFIX}
-    volumes:
-      - "../certificates/kafka.truststore.jks:/opt/sftp-to-kafka/ssl/truststore.jks"
-      - "../certificates/sftp-to-kafka.keystore:/opt/sftp-to-kafka/ssl/opt/sftp-to-kafka/ssl/keystore.jks"
+      SPRING_KAFKA_PRODUCER_PRPPERTIES_COMPRESSION-TYPE: gzip
+      SPRING_KAFKA_PROPERTIES_MAX_REQUEST_SIZE: 5000000
+      SPRING_KAFKA_PRODUCER_KEY_SERIALZER_CLASS_CONFIG: StringSerialzer.class
+      SPRING_KAFKA_PRODUCER_VALUE_SERIALZER_CLASS_CONFIG: StringSerialzer.class
 
-  redis-metastore:
+      APP_SOURCE_USE: ${SFTP_READ_FROM}
+      APP_SOURCE_LOCALPATH: "/opt/download"
+      APP_SOURCE_PROPERTYASID: ${SFTP_KEY_PROPERTY_PATH}
+      APP_SOURCE_FILENAMEFILTER: ${SFTP_FILE_FILTER_SUFFIX}
+      APP_SOURCE_FIXED_DELAY: 86400000 # 1 day
+      JAVA_TOOL_OPTIONS: "-Xmx8g -Xms2g -XX:MaxDirectMemorySize=500M"
+
+    volumes:
+      - "${KAFKA_TRUST_STORE_LOCATION}:/workspace/opt/sftp-to-kafka/ssl/truststore.jks:ro"
+      - "${SFTP_KEY_STORE_LOCATION}:/workspace/opt/sftp-to-kafka/ssl/keystore.jks:ro"
+      - "${SFTP_SOURCE_PATH}:/opt/download"
+    networks:
+      - mh-guide-to-kafka
+    depends_on:
+      - db
+
+  db:
     image: redis:alpine3.20
     environment:
       REDIS_PASSWORD: ${SFTP_REDIS_PW}
@@ -29,3 +44,8 @@ services:
       REDIS_DATABASES: 1
     expose:
       - "6379"
+    networks:
+      - mh-guide-to-kafka
+
+networks:
+  mh-guide-to-kafka: {}
