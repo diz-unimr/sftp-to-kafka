@@ -5,8 +5,11 @@ spring:
   kafka:
     bootstrapServers: localhost:9092
     security.protocol: PLAINTEXT
-
-
+    producer:
+      key:
+        serializer: StringSerializer.class
+      value:
+        serializer: StringSerializer.class
 
   data:
     redis:
@@ -20,7 +23,7 @@ app:
   source:
     use: local #local | sftp
     localPath: "testData/download"
-    propertyAsId: GENERAL.PATIENT_IDENTIFIER
+    propertyAsId: general.PATIENT_IDENTIFIER
     fileNameFilter: ".json.zip"
     pollSize: 1
     fixedDelay: 100
