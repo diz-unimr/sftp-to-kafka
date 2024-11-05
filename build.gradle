@@ -67,3 +67,9 @@ spotless {
         googleJavaFormat() // has its own section below
     }
 }
+
+tasks.named("bootBuildImage") {
+    imageName = 'sftp-to-kafka-alpha:latest'
+    environment["BP_HEALTH_CHECKER_ENABLED"] = "true"
+    buildpacks = ["urn:cnb:builder:paketo-buildpacks/java", "gcr.io/paketo-buildpacks/health-checker:latest"]
+}
