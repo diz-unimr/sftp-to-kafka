@@ -33,7 +33,7 @@ dependencies {
     implementation 'org.springframework.integration:spring-integration-sftp'
     implementation "org.springframework.integration:spring-integration-kafka"
     implementation "redis.clients:jedis"
-    implementation 'org.json:json:20240303'
+    implementation 'org.json:json:20241224'
     implementation "org.springframework.integration:spring-integration-redis"
     implementation 'com.jayway.jsonpath:json-path:2.9.0'
 
