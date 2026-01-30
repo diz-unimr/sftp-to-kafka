@@ -35,7 +35,7 @@ dependencies {
     implementation "redis.clients:jedis"
     implementation 'org.json:json:20240303'
     implementation "org.springframework.integration:spring-integration-redis"
-    implementation 'com.jayway.jsonpath:json-path:2.9.0'
+    implementation 'com.jayway.jsonpath:json-path:2.10.0'
 
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-docker-compose'
