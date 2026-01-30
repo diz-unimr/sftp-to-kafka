@@ -1,17 +1,16 @@
 /* GNU AFFERO GENERAL PUBLIC LICENSE  Version 3 (C)2024 Datenintegrationszentrum Fachbereich Medizin Philipps Universität Marburg */
 package de.unimarburg.diz.config;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.zip.GZIPOutputStream;
-
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.common.errors.InvalidConfigurationException;
 import org.json.JSONException;
@@ -70,7 +69,8 @@ public class IntegrationTargets {
 
               final String s = metaStore.get(kafkaMessageKey);
 
-              if (s != null && s.equals(headers.get(LAST_MODIFIED).toString())) {
+              if (s != null
+                  && s.equals(Objects.requireNonNull(headers.get(LAST_MODIFIED)).toString())) {
                 log.info(
                     "skipping message id '{}' since it has been processed before with timestamp {}",
                     headers.getId(),
@@ -82,20 +82,21 @@ public class IntegrationTargets {
                   kafkaTemplate.send(
                       TARGET_TOPIC,
                       null,
-                      headers.getTimestamp(),
+                      Objects.requireNonNull(headers.getTimestamp()),
                       kafkaMessageKey,
                       gzipPayload(payload.toString(), headers.getId()));
               send.whenComplete(
                   (res, ex) -> {
                     if (ex != null) {
-                      log.error("storing message at KAFKA failed", ex);
+                      log.error("storing message at KAFKA failed", ex.getCause());
                       throw new RuntimeException("could not store message into Kafka");
                     }
-                    metaStore.put(kafkaMessageKey, headers.get("LAST_MODIFIED").toString());
+                    metaStore.put(
+                        kafkaMessageKey,
+                        Objects.requireNonNull(headers.get("LAST_MODIFIED")).toString());
 
                     log.info(
-                        "Message SUCCESSFULLY STORED AT KAFKA !{}",
-                        res.getRecordMetadata().toString());
+                        "Message SUCCESSFULLY STORED AT KAFKA !{}", res.getProducerRecord().key());
                   });
               return null;
             })
@@ -103,16 +104,16 @@ public class IntegrationTargets {
   }
 
   private static String gzipPayload(String json, UUID messageId) {
-      try {
-          final var baos = new ByteArrayOutputStream();
-          final var gzipOutputStream = new GZIPOutputStream(baos);
-          gzipOutputStream.write(json.getBytes(StandardCharsets.UTF_8));
-          gzipOutputStream.close();
-          return baos.toString();
-      } catch (Exception e) {
-          log.error("Cannot compress payload for message id '{}'", messageId);
-          return "";
-      }
+    try {
+      final var baos = new ByteArrayOutputStream();
+      final var gzipOutputStream = new GZIPOutputStream(baos);
+      gzipOutputStream.write(json.getBytes(StandardCharsets.UTF_8));
+      gzipOutputStream.close();
+      return baos.toString();
+    } catch (Exception e) {
+      log.error("Cannot compress payload for message id '{}'", messageId);
+      return "";
+    }
   }
 
   private static Message<Object> getMessageWithEnrichedLastModifiedHeader(
@@ -151,7 +152,7 @@ public class IntegrationTargets {
     if (StringUtils.hasText(sourceConfig.propertyAsId())) {
       kafkaMessageKey = tryGetPayloadInternalId(payload.toString());
     } else {
-      kafkaMessageKey = headers.getId().toString();
+      kafkaMessageKey = Objects.requireNonNull(headers.getId()).toString();
     }
     return kafkaMessageKey;
   }
