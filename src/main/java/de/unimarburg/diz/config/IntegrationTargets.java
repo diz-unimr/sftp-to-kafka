@@ -1,11 +1,17 @@
 /* GNU AFFERO GENERAL PUBLIC LICENSE  Version 3 (C)2024 Datenintegrationszentrum Fachbereich Medizin Philipps Universität Marburg */
 package de.unimarburg.diz.config;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.zip.GZIPOutputStream;
+
 import lombok.extern.log4j.Log4j2;
 import org.apache.kafka.common.errors.InvalidConfigurationException;
 import org.json.JSONException;
@@ -78,7 +84,7 @@ public class IntegrationTargets {
                       null,
                       headers.getTimestamp(),
                       kafkaMessageKey,
-                      payload.toString());
+                      gzipPayload(payload.toString(), headers.getId()));
               send.whenComplete(
                   (res, ex) -> {
                     if (ex != null) {
@@ -94,6 +100,19 @@ public class IntegrationTargets {
               return null;
             })
         .get();
+  }
+
+  private static String gzipPayload(String json, UUID messageId) {
+      try {
+          final var baos = new ByteArrayOutputStream();
+          final var gzipOutputStream = new GZIPOutputStream(baos);
+          gzipOutputStream.write(json.getBytes(StandardCharsets.UTF_8));
+          gzipOutputStream.close();
+          return baos.toString();
+      } catch (Exception e) {
+          log.error("Cannot compress payload for message id '{}'", messageId);
+          return "";
+      }
   }
 
   private static Message<Object> getMessageWithEnrichedLastModifiedHeader(
