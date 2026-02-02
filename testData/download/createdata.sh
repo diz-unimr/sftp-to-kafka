@@ -2,7 +2,7 @@
 
 # Function to generate a random string of length 20
 generate_random_string() {
-  cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 20 | head -n 1
+  openssl rand -base64 48 | tr -dc 'a-zA-Z0-9' | head -c 20
 }
 
 # Create 1000 JSON files
