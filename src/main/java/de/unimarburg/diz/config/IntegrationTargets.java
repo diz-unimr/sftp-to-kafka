@@ -84,7 +84,7 @@ public class IntegrationTargets {
                       null,
                       Objects.requireNonNull(headers.getTimestamp()),
                       kafkaMessageKey,
-                      gzipPayload(payload.toString(), headers.getId()));
+                      payload.toString());
               send.whenComplete(
                   (res, ex) -> {
                     if (ex != null) {
