@@ -6,10 +6,8 @@ spring:
     bootstrapServers: localhost:9092
     security.protocol: PLAINTEXT
     producer:
-      key:
-        serializer: StringSerializer.class
-      value:
-        serializer: StringSerializer.class
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
   data:
     redis:
