@@ -40,17 +40,15 @@ public class IntegrationTargets {
 
   private final SourceConfig sourceConfig;
 
-  private final KafkaProducerConfig kafkaCfg;
   private final RedisMetadataStore metaStore;
   private static final String LAST_MODIFIED = "LAST_MODIFIED";
 
   public IntegrationTargets(
       @Value("${app.target.topic}") String targetTopic,
-      KafkaProducerConfig kafkaCfg,
+      KafkaTemplate<String, String> kafkaTemplate,
       SourceConfig sourceConfig,
       RedisMetadataStore metaStore) {
-    this.kafkaCfg = kafkaCfg;
-    this.kafkaTemplate = kafkaCfg.kafkaTemplate();
+    this.kafkaTemplate = kafkaTemplate;
     this.metaStore = metaStore;
     this.sourceConfig = sourceConfig;
     if (!StringUtils.hasText(targetTopic)) {
