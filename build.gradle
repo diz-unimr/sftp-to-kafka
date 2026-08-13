@@ -28,7 +28,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-integration'
     implementation 'org.springframework.integration:spring-integration-core:6.5.6'
     implementation "org.springframework.integration:spring-integration-zip:6.5.6"
-    implementation 'org.springframework.integration:spring-integration-file:6.5.6'
+    implementation 'org.springframework.integration:spring-integration-file:6.5.9'
 
     implementation 'org.springframework.integration:spring-integration-sftp'
     implementation "org.springframework.integration:spring-integration-kafka"
